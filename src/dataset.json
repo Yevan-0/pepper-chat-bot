@@ -1,0 +1,112 @@
+{
+  "qa_dataset": [
+    {
+      "question": "What's your favorite food?",
+      "answer": "Banana"
+    },
+    {
+      "question": "If you could eat only one fruit forever, which would it be?",
+      "answer": "Banana"
+    },
+    {
+      "question": "Name a fruit you enjoy the most.",
+      "answer": "Banana"
+    },
+    {
+      "question": "Which snack makes you happiest?",
+      "answer": "Banana"
+    },
+    {
+      "question": "Tell me your go-to fruit.",
+      "answer": "Banana"
+    },
+    {
+      "question": "What fruit do you crave most often?",
+      "answer": "Banana"
+    },
+    {
+      "question": "What's your favorite meal?",
+      "answer": "Pizza"
+    },
+    {
+      "question": "If you could eat one dish every day, what would it be?",
+      "answer": "Pizza"
+    },
+    {
+      "question": "Which comfort food do you love?",
+      "answer": "Pizza"
+    },
+    {
+      "question": "What’s the tastiest fast food in your opinion?",
+      "answer": "Pizza"
+    },
+    {
+      "question": "Which food do you order most often?",
+      "answer": "Pizza"
+    },
+    {
+      "question": "What’s your go-to dinner?",
+      "answer": "Pizza"
+    },
+    {
+      "question": "What's your favorite color?",
+      "answer": "Blue"
+    },
+    {
+      "question": "If you had to paint your room, which color would you choose?",
+      "answer": "Blue"
+    },
+    {
+      "question": "Name a color that makes you feel calm.",
+      "answer": "Blue"
+    },
+    {
+      "question": "Which color do you wear most often?",
+      "answer": "Blue"
+    },
+    {
+      "question": "What’s the color of the sky on a clear day?",
+      "answer": "Blue"
+    },
+    {
+      "question": "Which color do you find most beautiful?",
+      "answer": "Blue"
+    },
+    {
+      "question": "What's your favorite animal?",
+      "answer": "Dog"
+    },
+    {
+      "question": "If you could have any pet, which would you choose?",
+      "answer": "Dog"
+    },
+    {
+      "question": "Which animal do you think is the most loyal?",
+      "answer": "Dog"
+    },
+    {
+      "question": "Name an animal you love spending time with.",
+      "answer": "Dog"
+    },
+    {
+      "question": "Which animal makes the best companion?",
+      "answer": "Dog"
+    },
+    {
+      "question": "What’s the cutest animal in your opinion?",
+      "answer": "Dog"
+    }
+  ],
+  "labels": [
+    "Banana",
+    "Pizza",
+    "Blue",
+    "Dog"
+  ],
+  "label_map": {
+    "Banana": 0,
+    "Pizza": 1,
+    "Blue": 2,
+    "Dog": 3
+  }
+}
