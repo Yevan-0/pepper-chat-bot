@@ -5,12 +5,20 @@ import App from './App.jsx'
 import { trainModel, predict } from './model';
 import dataset from "./dataset.json";
 
+window.mlReady = false;
+window.predict = null;
+
 async function test() {
   console.log("Training...");
   await trainModel(dataset, (ep, logs) => {
     if (ep % 20 === 0)
       console.log(`Epoch ${ep} | Loss: ${logs.loss.toFixed(3)} | Acc: ${logs.acc?.toFixed(3)}`);
   });
+
+  window.mlReady = true;
+  window.predict = predict;
+  window.dispatchEvent(new Event("model-ready")); // signal to App
+  console.log("Model ready");
 
   console.log("Testing predictions...");
   const tests = [
