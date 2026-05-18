@@ -27,7 +27,6 @@ async function test() {
     "Which color is the sky?",
     "What animal is the most loyal?",
     "what animal is the best?",
-    "do you prefer eating dogs or bananas?"
   ];
 
   for (const q of tests) {
