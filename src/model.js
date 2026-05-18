@@ -14,11 +14,12 @@ export const buildVocab = (texts) => {
     return;
   }
   // the first unseen word is marked as 2 (0 is PAD,  1 is OOV)
+  vocab = { "<PAD>": 0, "<OOV>": 1 }
   let index = 2;
   // loop through dataset to find text (question)
   for (const text of texts) {
-    // loop through dataset to find word (from vocab)
-    for (const word of text.toLowerCase().split(/\s+/)) {
+    const cleanText = text.toLowerCase().replace(/[^\w\s]/g, "")
+    for (const word of cleanText.split(/\s+/)) {
       // clause to mark index for unseen word
       if (!vocab[word]) {
         vocab[word] = index++
@@ -29,7 +30,9 @@ export const buildVocab = (texts) => {
 }
 
 export const textToSequence = (text) => {
-  return text.toLowerCase().split(/\s+/)
+  const cleanText = text.toLowerCase().replace(/[^\w\s]/g, "")
+
+  return cleanText.split(/\s+/)
     .map(word => vocab[word] ?? vocab["<OOV>"])
 }
 
@@ -43,7 +46,7 @@ export const buildModel = (vocabSize, numClass) => {
   model.add(tf.layers.embedding({
     inputDim: vocabSize,
     outputDim: 32,
-    inputLength: MAXLEN
+    inputLength: 20
   }));
 
   model.add(tf.layers.globalAveragePooling1d());
@@ -73,8 +76,8 @@ export const trainModel = async (dataset, onEpochEnd) => {
   buildVocab(texts)
 
   const sequences = texts.map(t => pad(textToSequence(t)));
-  const xs = tf.tensor2d(sequences, [sequences.length, MAXLEN], 'int32');
-  const ys = tf.tensor1d(numericLabels, 'int32')
+  const xs = tf.tensor2d(sequences, [sequences.length, MAXLEN], 'float32');
+  const ys = tf.tensor1d(numericLabels, 'float32')
 
   buildModel(Object.keys(vocab).length, labels.length);
 
