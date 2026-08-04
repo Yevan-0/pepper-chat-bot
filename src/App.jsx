@@ -29,8 +29,12 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [listening, setListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const baseTextRef = useRef(""); // text already in the box before current recognition session
 
   useEffect(() => {
     if (window.mlReady) {
@@ -44,11 +48,93 @@ export default function App() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  // Set up speech recognition once
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setSpeechSupported(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onresult = (event) => {
+      let finalTranscript = "";
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      if (finalTranscript) {
+        baseTextRef.current = (baseTextRef.current + " " + finalTranscript).trim();
+      }
+
+      const combined = (baseTextRef.current + " " + interimTranscript).trim();
+      setInput(combined);
+      requestAnimationFrame(autoResize);
+    };
+
+    recognition.onerror = (event) => {
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setError("Microphone access was denied.");
+      } else if (event.error !== "no-speech") {
+        setError("Speech recognition error: " + event.error);
+      }
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.onresult = null;
+      recognition.onerror = null;
+      recognition.onend = null;
+      try { recognition.stop(); } catch {}
+    };
+  }, []);
+
   const autoResize = () => {
     const ta = textareaRef.current;
     if (!ta) return;
     ta.style.height = "auto";
     ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
+  };
+
+  const toggleListening = () => {
+    if (!speechSupported) {
+      setError("Speech recognition isn't supported in this browser.");
+      return;
+    }
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+
+    if (listening) {
+      recognition.stop();
+      setListening(false);
+      return;
+    }
+
+    setError(null);
+    baseTextRef.current = input; // keep whatever's already typed
+    try {
+      recognition.start();
+      setListening(true);
+    } catch (e) {
+      // start() throws if already started; ignore
+    }
   };
 
   const handleSend = () => {
@@ -59,9 +145,15 @@ export default function App() {
       return;
     }
 
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+    }
+
     setError(null);
     setMessages(prev => [...prev, { role: "user", text }]);
     setInput("");
+    baseTextRef.current = "";
     setLoading(true);
     if (textareaRef.current) textareaRef.current.style.height = "auto";
 
@@ -119,12 +211,27 @@ export default function App() {
           <textarea
             ref={textareaRef}
             rows={1}
-            placeholder="Ask something…"
+            placeholder={listening ? "Listening…" : "Ask something…"}
             value={input}
-            onChange={e => { setInput(e.target.value); autoResize(); }}
+            onChange={e => { setInput(e.target.value); baseTextRef.current = e.target.value; autoResize(); }}
             onKeyDown={handleKeyDown}
             disabled={loading}
           />
+
+          <button
+            className={`mic-btn${listening ? " listening" : ""}`}
+            onClick={toggleListening}
+            disabled={loading || !speechSupported}
+            aria-label={listening ? "Stop listening" : "Start voice input"}
+            title={speechSupported ? (listening ? "Stop listening" : "Start voice input") : "Speech recognition not supported"}
+            type="button"
+          >
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <rect x="5" y="1" width="5" height="8" rx="2.5" stroke="currentColor" strokeWidth="1.4" />
+              <path d="M2.5 7.5a5 5 0 0 0 10 0M7.5 12.5V14M5 14h5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          </button>
+
           <button
             className="send-btn"
             onClick={handleSend}
@@ -138,7 +245,9 @@ export default function App() {
         </div>
 
         {error && <div className="error-msg">{error}</div>}
-        <div className="hint">shift+enter for newline · enter to send</div>
+        <div className="hint">
+          {speechSupported ? "shift+enter for newline · enter to send · mic for voice input" : "shift+enter for newline · enter to send"}
+        </div>
       </div>
     </div>
   );
